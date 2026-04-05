@@ -40,6 +40,15 @@ Include all dependencies needed by:
 - Temporary files
 - Environment-specific files
 
+**`monitor.py`** -- progress dashboard for monitoring the loop in real time. Generate this file using the template in `skills/_shared/monitor-template.py`. The template is a self-contained Python script (stdlib only) that:
+
+- Reads `progress.jsonl` for iteration data (scores, components, hypotheses, timestamps)
+- Falls back to parsing `git log` commit messages if `progress.jsonl` doesn't exist yet
+- Serves an HTML dashboard on `localhost:8080` using Chart.js (CDN)
+- Auto-refreshes every 30 seconds
+
+Read `skills/_shared/monitor-template.py` and write it verbatim as `monitor.py` in the output directory. Do NOT modify the template -- it is designed to work with any autoeval loop.
+
 ### Step 2: Initialize Git
 
 If the output directory is not already a git repo:
@@ -113,8 +122,23 @@ claude --dangerously-skip-permissions "$(cat program.md)"
 
 > **Permission modes:** `--dangerously-skip-permissions` bypasses all permission prompts — only use in isolated environments (containers, VMs). For safer unattended operation with background safety checks, use `--enable-auto-mode` instead.
 
-**Monitoring:**
-- Check progress: `git log --oneline` -- each successful iteration is a commit with the score
+**Monitoring -- open a second terminal and run:**
+
+```bash
+cd {output_dir}
+python monitor.py
+```
+
+This opens a live dashboard at `http://localhost:8080` showing:
+- Composite score progression over iterations
+- Individual component scores (toggleable)
+- Best score, floor/ceiling bounds
+- Hypothesis text on hover
+- Summary stats: iteration count, time elapsed, delta from baseline
+
+The dashboard auto-refreshes every 30 seconds.
+
+**Other controls:**
 - Stop the loop: interrupt the Claude Code session (Ctrl+C)
 - Steer the loop: edit `program.md` constraints or domain guidance, then restart
 

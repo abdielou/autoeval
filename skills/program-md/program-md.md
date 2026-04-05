@@ -55,11 +55,17 @@ Follow this loop indefinitely:
 
 4. **Score** -- Read the eval output. The composite score is [description of scoring]. Current best: [baseline from Phase 4].
 
-5. **Decide:**
-   - If score >= previous best: git add -A && git commit -m "hypothesis: [why] -- change: [what] -- score [X.XX]"
-   - If score < previous best: git checkout -- . to revert all changes
+5. **Log** -- Append the eval result to `progress.jsonl` for the monitoring dashboard:
+   ```bash
+   echo '{"iteration": N, "timestamp": "'$(date -Iseconds)'", "score": X.XX, "components": {COMPONENT_SCORES}, "hypothesis": "HYPOTHESIS_TEXT", "kept": true/false}' >> progress.jsonl
+   ```
+   Replace N with the iteration number, COMPONENT_SCORES with the components object from the eval JSON output, and HYPOTHESIS_TEXT with your hypothesis. Always append — even for reverted experiments (set `"kept": false`).
 
-6. **Repeat** -- Go back to step 1. Try a different approach.
+6. **Decide:**
+   - If score >= previous best: git add -A && git commit -m "hypothesis: [why] -- change: [what] -- score [X.XX]"
+   - If score < previous best: git checkout -- . to revert all changes (but progress.jsonl keeps the record)
+
+7. **Repeat** -- Go back to step 1. Try a different approach.
 
 ## Exploration Schedule
 
