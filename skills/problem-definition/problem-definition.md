@@ -36,11 +36,24 @@ Based on the user's answers, identify which loop type(s) fit:
 
 1. Present your classification with reasoning: "This looks like a **[Loop Type]** because [reason]"
 2. If the problem could map to multiple types, explain the distinction and let the user choose
-3. If the problem suggests a composed loop (primary + nested), present both options:
-   - **Simple:** Single loop with [primary type] -- faster to set up, easier to debug
-   - **Composed:** [Primary type] wrapping [secondary type] -- higher ceiling, more complex
+3. If the problem suggests a composed loop (primary + nested), present a **real comparative analysis** of both architectures -- not just labels. For each option, describe:
 
-   Use the Socrates skill (if available) to help evaluate the tradeoffs between simple and composed. Let the user decide.
+   **Option A: Single Loop ([primary type])**
+   - **What the meta-agent edits:** [Concrete edit surface for this problem -- e.g., "the system prompt and tool definitions"]
+   - **What gets scored:** [Concrete scoring approach -- e.g., "task pass rate across 20 test cases"]
+   - **Iteration cycle:** [What one loop iteration looks like end-to-end]
+   - **Ceiling:** [What this architecture can and cannot optimize]
+   - **Complexity:** [Setup effort, debugging difficulty, failure modes]
+
+   **Option B: Composed Loop ([primary type] wrapping [secondary type])**
+   - **Outer loop edits:** [What the outer meta-agent changes]
+   - **Inner loop edits:** [What the inner loop optimizes per outer iteration]
+   - **What gets scored:** [How scoring works at each level]
+   - **Iteration cycle:** [What the full nested cycle looks like]
+   - **Ceiling:** [What this unlocks that the single loop cannot reach]
+   - **Complexity:** [Additional cost, debugging difficulty, failure modes]
+
+   **Recommendation:** State which option you'd start with and why, based on the user's constraints (time budget, complexity tolerance, iteration headroom). Use the Socrates skill (if available) to stress-test the tradeoffs. Let the user decide, but give them a real basis for the decision.
 
 ### Step 3: Exit Ramp Check
 
