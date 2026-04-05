@@ -285,7 +285,7 @@ A complete, runnable optimization loop:
 - Seed harness file(s) — minimal baseline implementation with marked edit surface
 - `evals/` — eval cases, scoring functions, runner, coverage docs
 - Environment files — dependencies, Dockerfile (optional), .gitignore
-- Kickoff command: `claude --prompt-file program.md`
+- Kickoff command: `claude "$(cat program.md)"`
 
 The loop follows: **change → run → score → keep/discard → repeat**
 
@@ -1284,7 +1284,7 @@ Present the final summary to the user:
 
 ```bash
 cd {output_dir}
-claude --prompt-file program.md
+claude "$(cat program.md)"
 ```
 
 **Monitoring:**

@@ -220,7 +220,7 @@ This is the most important phase. The eval suite is what makes the autonomous lo
 5. Present kickoff command:
    ```
    cd <output-dir>
-   claude --prompt-file program.md
+   claude "$(cat program.md)"
    ```
 6. Brief the user:
    - How to monitor progress (check git log for iterations)

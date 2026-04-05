@@ -109,7 +109,7 @@ Phases 1-2 are always interactive. Phases 3-6 are interactive by default, or aut
 After autoeval completes:
 
 ```bash
-claude --prompt-file program.md
+claude "$(cat program.md)"
 ```
 
 The meta-agent reads `program.md` and begins the autonomous loop — modifying the seed implementation, scoring each change, keeping improvements, and repeating indefinitely.

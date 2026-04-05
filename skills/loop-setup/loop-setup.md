@@ -93,7 +93,7 @@ Present the final summary to the user:
 
 ```bash
 cd {output_dir}
-claude --prompt-file program.md
+claude "$(cat program.md)"
 ```
 
 **Monitoring:**
