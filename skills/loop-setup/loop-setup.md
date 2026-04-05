@@ -117,9 +117,11 @@ Wait for the user to explicitly confirm. Do NOT provide the kickoff command unti
 
 ```bash
 cd {output_dir}
-claude --dangerously-skip-permissions "$(cat program.md)"
+claude --dangerously-skip-permissions --append-system-prompt-file program.md "Start the optimization loop. Read the edit surface files, run the eval, and begin iterating."
 ```
 
+> `--append-system-prompt-file` loads program.md as background instructions. The quoted string is the initial prompt that kicks off the first iteration.
+>
 > **Permission modes:** `--dangerously-skip-permissions` bypasses all permission prompts — only use in isolated environments (containers, VMs). For safer unattended operation with background safety checks, use `--enable-auto-mode` instead.
 
 **Monitoring -- open a second terminal and run:**
