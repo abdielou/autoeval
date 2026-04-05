@@ -212,10 +212,68 @@ To add a new case:
 3. [How to verify it works]
 ```
 
-### Step 8: Advance State
+### Step 8: User Eval Review
+
+<HARD-GATE>
+The user MUST review and approve the eval before proceeding. The eval is the foundation of the entire loop -- if it measures the wrong thing, the loop optimizes toward garbage. Do NOT skip this step or rush through it.
+</HARD-GATE>
+
+Walk the user through the eval in plain language. No code -- the goal is for the user to understand what the loop will optimize toward and decide if that's what they actually want.
+
+**Part 1: What's being scored**
+
+Present each scoring component as a row:
+
+| Component | Weight | What it rewards | What it punishes |
+|-----------|--------|----------------|-----------------|
+| [name] | [X%] | [plain-English description of what a high score means] | [what a low score means] |
+
+For each component, give a concrete example: "A score of 0.3 on [component] means [specific description]. A score of 0.9 means [specific description]."
+
+**Part 2: What's NOT being scored**
+
+Explicitly list qualities that a human might care about but the eval does not capture:
+
+> "This eval does **not** measure:
+> - [Quality X] -- [why it's excluded and whether it matters]
+> - [Quality Y] -- [why it's excluded and whether it matters]
+>
+> If any of these matter to you, we should add them before starting the loop."
+
+This is critical. Unstated gaps become blind spots the meta-agent will exploit.
+
+**Part 3: Score intuition**
+
+Give the user concrete intuition for what scores mean in their domain:
+
+> "For your problem, here's what different scores feel like:
+> - **0.3** -- [concrete description of what a 0.3 output looks/sounds/behaves like]
+> - **0.5** -- [concrete description]
+> - **0.7** -- [concrete description]
+> - **0.9** -- [concrete description]"
+
+If possible, reference the baseline score: "Your seed implementation scores [X.XX], which corresponds to [description]."
+
+**Part 4: Gaming risks**
+
+Identify specific ways the meta-agent could inflate the score without genuine improvement:
+
+> "Ways the agent could game this eval:
+> - [Specific gaming strategy and what it would look like]
+> - [Another strategy]
+>
+> The current eval [does/does not] have defenses against these. [If not: here's what we could add.]"
+
+**After presenting all four parts**, ask:
+
+> "Does this eval capture what you care about? Anything to add, remove, or reweight before we proceed?"
+
+Wait for the user's response. If they request changes, make them and re-run the integrity validation (Step 6). Only proceed once the user explicitly approves.
+
+### Step 9: Advance State
 
 Update `state.md` to `phase: 4`.
 
-If interactive, tell the user: "Eval suite built with [N] cases across [M] dimensions. Moving to harness scaffolding -- creating the seed implementation the meta-agent will iterate on."
+Tell the user: "Eval approved. Moving to harness scaffolding -- creating the seed implementation the meta-agent will iterate on."
 
 Return control to the orchestrator.
