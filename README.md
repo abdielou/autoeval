@@ -18,10 +18,13 @@ The `/autoeval` command guides you through defining your optimization problem, d
 
 ### Inspired by
 
-- **[autoagent](https://github.com/kevinrgu/autoagent)** — autonomous agent harness engineering (Kevin Gu, 2025)
 - **[autoresearch](https://github.com/karpathy/autoresearch)** — autonomous ML research (Andrej Karpathy, 2025)
+- **[autoagent](https://github.com/kevinrgu/autoagent)** — autonomous agent harness engineering (Kevin Gu, 2025)
+- **[AIDE](https://github.com/WecoAI/aideml)** — AI-driven ML experiment iteration (Weco AI)
+- **[OpenEvolve](https://github.com/algorithmicsuperintelligence/openevolve)** — open-source AlphaEvolve, evolutionary code optimization
+- **[AI-Scientist](https://github.com/SakanaAI/AI-Scientist)** — fully automated open-ended scientific discovery (Sakana AI)
 
-Both share the same core loop: change → run → score → keep/discard → repeat. autoeval helps you set up that loop for any problem.
+All share the same core loop: change → run → score → keep/discard → repeat. autoeval helps you set up that loop for any problem.
 
 ## Installation
 
