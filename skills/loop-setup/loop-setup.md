@@ -93,8 +93,10 @@ Present the final summary to the user:
 
 ```bash
 cd {output_dir}
-claude "$(cat program.md)"
+claude --dangerously-skip-permissions "$(cat program.md)"
 ```
+
+> **Permission modes:** `--dangerously-skip-permissions` bypasses all permission prompts — only use in isolated environments (containers, VMs). For safer unattended operation with background safety checks, use `--enable-auto-mode` instead.
 
 **Monitoring:**
 - Check progress: `git log --oneline` -- each successful iteration is a commit with the score
