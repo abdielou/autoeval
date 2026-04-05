@@ -76,20 +76,35 @@ If anything fails, fix it before presenting the kickoff command. The user should
 
 ### Step 4: Present Kickoff
 
-Update `state.md` to `phase: complete`.
-
-Present the final summary to the user:
+Present the final summary to the user and **wait for explicit confirmation before providing the kickoff command:**
 
 ---
 
-**autoeval setup complete.**
+**autoeval setup complete.** Here's what was built:
 
 **Problem:** [one-line summary]
 **Loop type:** [classification]
 **Baseline score:** [X.XX] (floor: [Y], ceiling: [Z])
 **Eval cases:** [N] cases across [M] dimensions
+**Output directory:** `{output_dir}`
 
-**To start the autonomous experiment:**
+**What the loop will do:** The meta-agent will modify [edit surface description], run the eval suite after each change, keep improvements, and commit them. Each iteration takes roughly [time estimate based on eval complexity].
+
+**Before you kick it off, confirm:**
+1. The eval references are real data, not synthetic stubs (see eval integrity report)
+2. The baseline score makes sense for a seed implementation
+3. You're comfortable with the edit surface -- what the agent is allowed to change
+4. The output directory is correct and you're OK with it being modified autonomously
+
+Ready to start? (yes/no)
+
+---
+
+<HARD-GATE>
+Wait for the user to explicitly confirm. Do NOT provide the kickoff command until the user says yes. If they raise concerns, address them first.
+</HARD-GATE>
+
+**After user confirms**, update `state.md` to `phase: complete` and present the kickoff:
 
 ```bash
 cd {output_dir}
