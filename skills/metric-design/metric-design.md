@@ -68,9 +68,17 @@ Use the Socrates skill (if available) to pressure-test the proposed metric. If S
 - Or is the metric too noisy -- random variation drowns out real improvements?
 - How many eval cases are needed for a reliable signal?
 
+**Noise and reliability:**
+- Is the scoring function deterministic? (same input always produces same score)
+- If noisy (LLM-as-judge, stochastic outputs): how many runs are needed for a stable signal?
+- Should we use median-of-N scoring in the loop? (typically 3-5 runs for exploration, 10 for confirmation)
+- Document the noise profile so Phase 5 can include the Noisy Metric Protocol in program.md
+
 **Cost per evaluation:**
 - How long does one eval run take? (This x hundreds of iterations = total loop time)
+- If using N-run noise reduction: multiply cost by N
 - Can we use a cheap proxy for exploration and the expensive metric for validation?
+- What time budget per iteration is reasonable? (autoresearch uses 5 minutes as a default)
 
 **Failure modes:**
 - What does the meta-agent optimize for if the metric has blind spots?
@@ -113,6 +121,16 @@ Write `.planning/autoeval/metric.md`:
 - [Gameability risk and mitigation]
 - [Blind spots in the metric]
 - [Cost considerations]
+
+## Noise Profile
+- **Deterministic:** [yes/no]
+- **Runs for stable signal:** [N for exploration, M for confirmation, or 1 if deterministic]
+- **Aggregation method:** [median/mean/N/A]
+
+## Time Budget
+- **Single eval run:** [estimated duration]
+- **Per iteration (with noise reduction):** [duration x runs]
+- **Recommended iteration cap:** [N minutes]
 
 ## Data Requirements
 - [Reference files, APIs, datasets needed for scoring]

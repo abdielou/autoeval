@@ -17,7 +17,7 @@ Write the meta-agent directive -- the `program.md` file that tells Claude Code h
 
 ### Step 1: Generate program.md
 
-Write `program.md` in the output directory with the following sections. Adapt the template to the specific problem -- this is a starting structure, not a rigid format.
+Write `program.md` in the output directory with the following sections. Adapt the template to the specific problem -- this is a starting structure, not a rigid format. Include the Noisy Metric Protocol section only if the scoring function has noisy components (LLM-as-judge, stochastic outputs). Set the time budget based on how long one eval run takes.
 
 ```markdown
 # [Problem Name] -- Autonomous Optimization Loop
@@ -37,24 +37,48 @@ You MUST NOT modify:
 - `[fixed_file.py]` -- [why it's fixed]
 - `program.md` -- do not modify this directive
 
+## Time Budget
+
+Each iteration should take no more than [N] minutes. If an approach requires more time, break it into smaller steps. The goal is rapid iteration — many small experiments beat a few large ones.
+
 ## Iteration Protocol
 
 Follow this loop indefinitely:
 
-1. **Analyze** -- Review the current implementation and previous experiment results. Identify a specific hypothesis to test.
+1. **Hypothesize** -- Review the current implementation, previous experiment results (check `git log --oneline`), and worst-scoring eval cases. Formulate a specific, testable hypothesis: "I believe [change] will improve [component] because [reasoning]."
 
 2. **Change** -- Make a focused modification to the edit surface. Change one thing at a time so you can attribute score changes to specific modifications.
 
 3. **Run** -- Execute the eval suite:
    [exact eval command]
+   [If metric is noisy: run N times and take the median — see Noisy Metric Protocol below]
 
 4. **Score** -- Read the eval output. The composite score is [description of scoring]. Current best: [baseline from Phase 4].
 
 5. **Decide:**
-   - If score >= previous best: git add -A && git commit -m "experiment: [what you changed] -- score [X.XX]"
+   - If score >= previous best: git add -A && git commit -m "hypothesis: [why] -- change: [what] -- score [X.XX]"
    - If score < previous best: git checkout -- . to revert all changes
 
 6. **Repeat** -- Go back to step 1. Try a different approach.
+
+## Exploration Schedule
+
+Every 5th iteration, do an **exploration round** instead of incremental improvement:
+
+- Try a fundamentally different approach, not a tweak to the current one
+- Consider techniques you haven't tried yet from the Domain-Specific Guidance
+- Look at the worst-scoring eval cases — what class of problem is the current approach failing on?
+- If stuck in a local optimum, create a new branch (`git checkout -b explore/[idea]`) to try a radical departure without losing the current best. If it scores better, merge it back. If not, return to main.
+
+## Experiment Branching
+
+When you have multiple promising directions:
+
+1. Create a branch: `git checkout -b explore/[direction-name]`
+2. Run several iterations on that branch
+3. If the branch's best score exceeds main: merge it back (`git checkout main && git merge explore/[name]`)
+4. If the branch stalls: return to main (`git checkout main`) and try a different direction
+5. Keep branches around — a stalled branch may become useful later when combined with other improvements
 
 ## Scoring Interpretation
 
@@ -81,14 +105,25 @@ Follow this loop indefinitely:
 - Keep experiments focused -- one hypothesis per iteration
 - Commit messages must include the score for tracking
 
+## Noisy Metric Protocol
+
+[Include this section if the scoring function has noisy components like LLM-as-judge]
+
+When the metric has noisy components:
+- Run the eval [N] times per iteration (e.g., 3-5 runs)
+- Use the **median** score (not mean — more robust to outliers)
+- Only count an improvement if the median exceeds the previous best
+- For the final score of a promising experiment, run [M] times (e.g., 10 runs) to confirm
+
 ## NEVER STOP
 
-Continue experimenting indefinitely. There is always room for improvement. If you feel stuck, try a radically different approach rather than stopping.
+Continue experimenting indefinitely. There is always room for improvement. If you feel stuck, use an exploration round rather than stopping.
 
 When you've exhausted incremental improvements in one direction:
 - Step back and reconsider the overall architecture
 - Try approaches you haven't tried yet
 - Look at the worst-scoring cases and focus there
+- Create an exploration branch for a radically different approach
 - Consider the domain guidance above for new ideas
 ```
 
