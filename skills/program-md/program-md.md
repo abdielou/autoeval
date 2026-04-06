@@ -45,6 +45,20 @@ Each iteration should take no more than [N] minutes. If an approach requires mor
 
 Follow this loop indefinitely:
 
+0. **Check Steering** -- Before each iteration, check `steering.md` for guidance from the user. Run:
+   ```bash
+   if [ -f steering.md ] && [ -s steering.md ]; then
+     CURRENT_COMMIT=$(git rev-parse --short HEAD)
+     cat steering.md
+   fi
+   ```
+   The file contains entries tagged with commit hashes:
+   ```
+   ## after abc1234
+   Focus on X, stop trying Y.
+   ```
+   Find the entry whose commit hash is closest to (but not after) the current HEAD. That is your active steering. Follow it — it overrides your own hypothesis when they conflict. If no entry applies to the current commit, ignore steering and hypothesize freely.
+
 1. **Hypothesize** -- Use the deep reasoning model to generate your hypothesis. Run:
    ```bash
    claude --model {deep_model} -p "$(cat <<'PROMPT'
@@ -61,7 +75,10 @@ Follow this loop indefinitely:
 
    Worst-scoring eval cases: [list them]
 
-   What is the single most promising change to try next? Be specific: name the file, the function, and the exact modification. Explain your reasoning.
+   Active steering from the user (if any):
+   $(if [ -f steering.md ] && [ -s steering.md ]; then cat steering.md; else echo "None"; fi)
+
+   What is the single most promising change to try next? Be specific: name the file, the function, and the exact modification. Explain your reasoning. If there is active steering, prioritize it.
    PROMPT
    )"
    ```

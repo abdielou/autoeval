@@ -169,7 +169,12 @@ Auto-refreshes every 30 seconds.
 **Controls:**
 - Stop the loop: Ctrl+C in Terminal 1 (waits for current iteration to finish)
 - Resume after stopping: `python run-loop.py` (picks up from git history)
-- Steer the loop: edit `program.md` constraints or domain guidance — takes effect at next session restart
+- Steer the loop: append to `steering.md` with a commit tag — takes effect on the next iteration:
+  ```
+  ## after <commit-hash>
+  Your guidance here. The agent prioritizes this over its own hypothesis.
+  ```
+- Permanent changes: edit `program.md` constraints or domain guidance — takes effect at next session restart
 - Custom timeout: `python run-loop.py --timeout 45` (minutes per session)
 
 **Expanding the eval:**
