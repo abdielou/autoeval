@@ -75,9 +75,9 @@ claude --plugin-dir ./path/to/autoeval
 **Examples:**
 
 ```
-/autoeval generate realistic engine sounds driven by RPM and throttle inputs
-/autoeval build an agent that recommends energy procurement strategies
-/autoeval --auto improve my RAG pipeline's retrieval accuracy
+/autoeval optimize my sorting algorithm for speed on large datasets
+/autoeval improve my classifier's accuracy on the test suite
+/autoeval --auto tune my prompt to maximize extraction accuracy
 ```
 
 The `--auto` flag makes Phases 3-6 run autonomously after the interactive metric design is locked in.
