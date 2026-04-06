@@ -17,14 +17,21 @@ import subprocess
 import sys
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
+try:
+    from http.server import ThreadingHTTPServer
+except ImportError:
+    ThreadingHTTPServer = HTTPServer  # fallback for older Python
 from datetime import datetime
 
 REFRESH_INTERVAL = 30  # seconds
 
+# Resolve paths relative to the script location, not cwd
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def parse_progress_jsonl():
     """Read progress.jsonl and return list of iteration dicts."""
-    path = os.path.join(os.getcwd(), "progress.jsonl")
+    path = os.path.join(SCRIPT_DIR, "progress.jsonl")
     if not os.path.exists(path):
         return []
     iterations = []
@@ -45,7 +52,7 @@ def parse_git_log():
     try:
         result = subprocess.run(
             ["git", "log", "--reverse", "--format=%H|%aI|%s"],
-            capture_output=True, text=True, check=True
+            capture_output=True, text=True, check=True, cwd=SCRIPT_DIR
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
@@ -83,10 +90,14 @@ def parse_git_log():
 
 
 def get_data():
-    """Get iteration data from best available source."""
-    data = parse_progress_jsonl()
-    if not data:
-        data = parse_git_log()
+    """Get iteration data from best available source.
+
+    Uses whichever source has more entries — progress.jsonl may be
+    incomplete if the loop didn't write to it consistently.
+    """
+    jsonl_data = parse_progress_jsonl()
+    git_data = parse_git_log()
+    data = jsonl_data if len(jsonl_data) >= len(git_data) else git_data
 
     if not data:
         return {
@@ -166,7 +177,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 </head>
 <body>
 <h1>autoeval progress</h1>
-<div class="refresh-indicator">auto-refresh: <span id="countdown">REFRESH_INTERVAL</span>s</div>
+<div class="refresh-indicator">auto-refresh: <span id="countdown">REFRESH_INTERVAL_VALUE</span>s</div>
 
 <div id="stats" class="stats"></div>
 <div class="chart-container">
@@ -175,7 +186,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <div id="no-data" class="no-data" style="display:none;">
   Waiting for first iteration... dashboard will auto-refresh.
 </div>
-<div class="footer">autoeval monitoring dashboard &mdash; refreshes every REFRESH_INTERVAL seconds</div>
+<div class="footer">autoeval monitoring dashboard &mdash; refreshes every REFRESH_INTERVAL_VALUE seconds</div>
 
 <script>
 const REFRESH_INTERVAL = REFRESH_INTERVAL_VALUE;
@@ -350,7 +361,7 @@ setInterval(() => {
 refresh();
 </script>
 </body>
-</html>""".replace('REFRESH_INTERVAL_VALUE', str(REFRESH_INTERVAL)).replace('REFRESH_INTERVAL', str(REFRESH_INTERVAL))
+</html>""".replace('REFRESH_INTERVAL_VALUE', str(REFRESH_INTERVAL))
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
@@ -396,7 +407,7 @@ def main():
                 port += 1
                 continue
         try:
-            server = HTTPServer(("localhost", port), DashboardHandler)
+            server = ThreadingHTTPServer(("localhost", port), DashboardHandler)
             break
         except OSError:
             port += 1
