@@ -75,10 +75,13 @@ Follow this loop indefinitely:
 
    Worst-scoring eval cases: [list them]
 
+   Failed experiments (avoid repeating these):
+   $(if [ -d failed_experiments ] && [ "$(ls failed_experiments/ 2>/dev/null)" ]; then ls -1 failed_experiments/ | tail -10; else echo "None yet"; fi)
+
    Active steering from the user (if any):
    $(if [ -f steering.md ] && [ -s steering.md ]; then cat steering.md; else echo "None"; fi)
 
-   What is the single most promising change to try next? Be specific: name the file, the function, and the exact modification. Explain your reasoning. If there is active steering, prioritize it.
+   What is the single most promising change to try next? Be specific: name the file, the function, and the exact modification. Explain your reasoning. If there is active steering, prioritize it. Avoid approaches that match failed experiments listed above — read the relevant diff files if you're unsure whether your idea overlaps.
    PROMPT
    )"
    ```
@@ -99,8 +102,39 @@ Follow this loop indefinitely:
    Replace N with the iteration number, COMPONENT_SCORES with the components object from the eval JSON output, and HYPOTHESIS_TEXT with your hypothesis. Always append — even for reverted experiments (set `"kept": false`).
 
 6. **Decide:**
-   - If score >= previous best: git add -A && git commit -m "hypothesis: [why] -- change: [what] -- score [X.XX]"
-   - If score < previous best: git checkout -- . to revert all changes (but progress.jsonl keeps the record)
+   - If score >= previous best:
+     ```bash
+     git add -A && git commit -m "hypothesis: [why] -- change: [what] -- score [X.XX]"
+     ```
+   - If score < previous best — **save the failed experiment before reverting:**
+     ```bash
+     mkdir -p failed_experiments
+     ITER=$(printf "%03d" N)
+     SCORE=$(printf "%.4f" X.XX)
+     DIFF_FILE="failed_experiments/${ITER}_score_${SCORE}.md"
+     cat > "$DIFF_FILE" << 'EXPEOF'
+     # Failed Experiment — Iteration N
+
+     ## Hypothesis
+     [Your hypothesis text]
+
+     ## Score
+     [X.XX] (previous best: [Y.YY], delta: [diff])
+
+     ## Component Scores
+     [Paste the component scores from the eval output]
+
+     ## Diff
+     ```diff
+     $(git diff)
+     ```
+
+     ## Why It Failed
+     [Brief analysis of why this change hurt the score — which components regressed and why]
+     EXPEOF
+     git checkout -- .
+     ```
+     The diff, hypothesis, score, and failure analysis are preserved in `failed_experiments/` for future reference. The agent should check this folder before hypothesizing to avoid repeating failed approaches.
 
 7. **Repeat** -- Go back to step 1. Try a different approach.
 
