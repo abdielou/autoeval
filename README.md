@@ -148,12 +148,14 @@ Steer the loop agent mid-run without stopping it. Append entries to `steering.md
 
 ```markdown
 ## after 7f5ad6f
-Stop adding noise layers for sharpness. The real problem is no engine-type
-branching. Focus on making AM envelope engine-type-aware.
+Stop trying to optimize the greedy heuristic. The biggest gain is switching 
+to a scoring-based approach where you evaluate all valid bins and pick the 
+best one. Look at the best-fit-decreasing literature.
 
 ## after a1b2c3d
-V8 crossplane is working well. Now focus on flat-plane V8 — the firing
-pattern score is near zero.
+The classifier accuracy is plateauing at 96.2%. The bottleneck is feature 
+engineering, not model choice. Try polynomial features on columns 3-7 — 
+those have non-linear relationships with the target.
 ```
 
 **How it works:**
