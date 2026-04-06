@@ -384,12 +384,21 @@ def main():
     port = args.port
     server = None
     for attempt in range(10):
+        # Connect-based check: on Windows, HTTPServer can bind to a port
+        # already in use without error, so we probe first
+        import socket
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.2)
+            if s.connect_ex(("localhost", port)) == 0:
+                # Port is in use — something is listening
+                if attempt == 0:
+                    print(f"Port {port} in use, finding a free port...")
+                port += 1
+                continue
         try:
             server = HTTPServer(("localhost", port), DashboardHandler)
             break
         except OSError:
-            if attempt == 0:
-                print(f"Port {port} in use, finding a free port...")
             port += 1
     if server is None:
         print(f"Could not find a free port in range {args.port}-{port}.")
