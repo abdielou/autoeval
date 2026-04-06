@@ -40,19 +40,26 @@ Include all dependencies needed by:
 - Temporary files
 - Environment-specific files
 
-**`monitor.py`** -- progress dashboard for monitoring the loop in real time. Generate this file using the template in `skills/_shared/monitor-template.py`. The template is a self-contained Python script (stdlib only) that:
+**`monitor.py`** -- progress dashboard for monitoring the loop in real time.
 
-- Reads `progress.jsonl` for iteration data (scores, components, hypotheses, timestamps)
-- Falls back to parsing `git log` commit messages if `progress.jsonl` doesn't exist yet
-- Serves an HTML dashboard on `localhost:8080` using Chart.js (CDN)
-- Auto-refreshes every 30 seconds
+<HARD-GATE>
+You MUST use the template at `skills/_shared/monitor-template.py`. Read it and write it VERBATIM as `monitor.py` in the output directory. Do NOT write your own dashboard. Do NOT modify the template. It handles Windows port detection quirks, auto-refresh, Chart.js rendering, and git log fallback. Copy it exactly.
+</HARD-GATE>
 
-Read `skills/_shared/monitor-template.py` and write it verbatim as `monitor.py` in the output directory. Do NOT modify the template -- it is designed to work with any autoeval loop.
+Read `skills/_shared/monitor-template.py` and write it verbatim as `monitor.py` in the output directory. No substitutions needed — it works with any autoeval loop as-is.
 
-**`run-loop.py`** -- cross-platform wrapper script (Python, stdlib only) that launches claude sessions with auto-restart. Read `skills/_shared/run-loop-template.py` and write it to the output directory, substituting:
+**`run-loop.py`** -- cross-platform wrapper script (Python, stdlib only) that launches claude sessions with auto-restart.
+
+<HARD-GATE>
+You MUST use the template at `skills/_shared/run-loop-template.py`. Read it, substitute ONLY the configuration variables, and write it verbatim to the output directory. Do NOT write your own run-loop.py from scratch. Do NOT modify the logic, the Popen usage, the Ctrl+C handling, or the session management. The template has been tested and fixed for cross-platform issues (Windows signal handling, process killing) that you will get wrong if you write it yourself.
+</HARD-GATE>
+
+Read `skills/_shared/run-loop-template.py` and write it to the output directory, substituting ONLY these values in the configuration block at the top:
 - `{runner_model}` — the user's chosen runner model
 - `{effort}` — the user's chosen effort level
 - `{timeout_minutes}` — calculated as 2x the expected time for {max_iterations} iterations (minimum 30 minutes)
+
+Do NOT change anything else in the template. The template uses `Popen` (not `subprocess.run`), does NOT use `-p` flag (the prompt is a positional argument for interactive mode), and has double Ctrl+C handling. These are all intentional.
 
 ### Step 2: Initialize Git
 
