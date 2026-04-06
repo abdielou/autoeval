@@ -161,7 +161,7 @@ When the metric has noisy components:
 
 ## Session Limits
 
-Run exactly **{max_iterations} iterations** in this session, then stop. The wrapper script (`run-loop.sh`) will restart you with a fresh context.
+Run exactly **{max_iterations} iterations** in this session, then stop. The wrapper script (`run-loop.py`) will restart you with a fresh context.
 
 After completing your {max_iterations}th iteration:
 1. Ensure all improvements are committed

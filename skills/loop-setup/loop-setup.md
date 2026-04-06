@@ -49,12 +49,10 @@ Include all dependencies needed by:
 
 Read `skills/_shared/monitor-template.py` and write it verbatim as `monitor.py` in the output directory. Do NOT modify the template -- it is designed to work with any autoeval loop.
 
-**`run-loop.sh`** -- wrapper script that launches claude sessions with auto-restart. Read `skills/_shared/run-loop-template.sh` and write it to the output directory, substituting:
+**`run-loop.py`** -- cross-platform wrapper script (Python, stdlib only) that launches claude sessions with auto-restart. Read `skills/_shared/run-loop-template.py` and write it to the output directory, substituting:
 - `{runner_model}` — the user's chosen runner model
 - `{effort}` — the user's chosen effort level
 - `{timeout_minutes}` — calculated as 2x the expected time for {max_iterations} iterations (minimum 30 minutes)
-
-Make it executable: `chmod +x run-loop.sh`
 
 ### Step 2: Initialize Git
 
@@ -147,7 +145,7 @@ Update `state.md` to `phase: complete` and present the kickoff:
 
 ```bash
 cd {output_dir}
-./run-loop.sh
+python run-loop.py
 ```
 
 This launches claude sessions that auto-restart with fresh context every {max_iterations} iterations. A hard timeout of {timeout_minutes} minutes acts as a safety net.
@@ -170,14 +168,14 @@ Auto-refreshes every 30 seconds.
 
 **Controls:**
 - Stop the loop: Ctrl+C in Terminal 1 (waits for current iteration to finish)
-- Resume after stopping: `./run-loop.sh` (picks up from git history)
+- Resume after stopping: `python run-loop.py` (picks up from git history)
 - Steer the loop: edit `program.md` constraints or domain guidance — takes effect at next session restart
-- Custom timeout: `./run-loop.sh --timeout 45` (minutes per session)
+- Custom timeout: `python run-loop.py --timeout 45` (minutes per session)
 
 **Expanding the eval:**
 - See `evals/README.md` for how to add cases
 - See `.planning/autoeval/eval-strategy.md` for coverage gaps and expansion plan
 
-> **Permission modes:** `run-loop.sh` uses `--dangerously-skip-permissions` — only run in isolated environments (containers, VMs). Edit the script to use `--enable-auto-mode` for safer unattended operation.
+> **Permission modes:** `run-loop.py` uses `--dangerously-skip-permissions` — only run in isolated environments (containers, VMs). Edit the script to use `--enable-auto-mode` for safer unattended operation.
 
 ---
