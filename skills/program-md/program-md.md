@@ -45,9 +45,29 @@ Each iteration should take no more than [N] minutes. If an approach requires mor
 
 Follow this loop indefinitely:
 
-1. **Hypothesize** -- Review the current implementation, previous experiment results (check `git log --oneline`), and worst-scoring eval cases. Formulate a specific, testable hypothesis: "I believe [change] will improve [component] because [reasoning]."
+1. **Hypothesize** -- Use the deep reasoning model to generate your hypothesis. Run:
+   ```bash
+   claude --model {deep_model} -p "$(cat <<'PROMPT'
+   I'm optimizing [problem description]. Current best score: [X.XX].
 
-2. **Change** -- Make a focused modification to the edit surface. Change one thing at a time so you can attribute score changes to specific modifications.
+   Recent experiments (git log):
+   $(git log --oneline -10)
+
+   Current implementation:
+   $(cat [edit surface files])
+
+   Last eval result:
+   $(cat [last eval output])
+
+   Worst-scoring eval cases: [list them]
+
+   What is the single most promising change to try next? Be specific: name the file, the function, and the exact modification. Explain your reasoning.
+   PROMPT
+   )"
+   ```
+   Read the response and use it to guide your next change. You may adapt the suggestion if it doesn't fully apply, but take the reasoning seriously.
+
+2. **Change** -- Make a focused modification to the edit surface based on the hypothesis. Change one thing at a time so you can attribute score changes to specific modifications.
 
 3. **Run** -- Execute the eval suite:
    [exact eval command]
@@ -69,12 +89,30 @@ Follow this loop indefinitely:
 
 ## Exploration Schedule
 
-Every 5th iteration, do an **exploration round** instead of incremental improvement:
+Every 5th iteration, do an **exploration round** instead of incremental improvement. Use the deep reasoning model to generate a fundamentally different approach:
 
-- Try a fundamentally different approach, not a tweak to the current one
+```bash
+claude --model {deep_model} -p "$(cat <<'PROMPT'
+I'm optimizing [problem description]. Current best score: [X.XX].
+
+Full experiment history:
+$(git log --oneline)
+
+Current implementation:
+$(cat [edit surface files])
+
+I've been making incremental improvements but may be stuck in a local optimum.
+Propose a fundamentally different approach — not a tweak, but a different
+algorithm, architecture, or strategy. Explain why it might break through
+the current ceiling.
+PROMPT
+)"
+```
+
+- Try the suggested approach on a new branch: `git checkout -b explore/[idea]`
 - Consider techniques you haven't tried yet from the Domain-Specific Guidance
 - Look at the worst-scoring eval cases — what class of problem is the current approach failing on?
-- If stuck in a local optimum, create a new branch (`git checkout -b explore/[idea]`) to try a radical departure without losing the current best. If it scores better, merge it back. If not, return to main.
+- If the branch scores better, merge it back. If not, return to main.
 
 ## Experiment Branching
 

@@ -113,24 +113,35 @@ Ready to start? (yes/no)
 Wait for the user to explicitly confirm. Do NOT provide the kickoff command until the user says yes. If they raise concerns, address them first.
 </HARD-GATE>
 
-**After user confirms**, ask which model and effort level to use:
+**After user confirms**, ask which models and effort level to use:
 
-> "Which model and effort level for the loop?
+> "The loop uses two models -- a **runner** for the main iteration cycle (editing code, running evals, committing) and a **deep reasoning model** for hypothesis generation and exploration rounds (called via `claude -p` one-shot).
 >
-> **Model:** `opus` (strongest, slowest, most expensive), `sonnet` (balanced -- recommended), `haiku` (fastest, cheapest, least capable)
+> **Runner model** (runs the session, does most of the work):
+> - `sonnet` -- balanced speed/quality (recommended)
+> - `haiku` -- fastest, cheapest, good for narrow edit surfaces
+> - `opus` -- strongest but expensive for a long-running loop
+>
+> **Deep reasoning model** (called for hypothesis + exploration rounds):
+> - `opus` -- best for creative leaps and novel approaches (recommended)
+> - `sonnet` -- cheaper, still capable
 >
 > **Effort:** `high` (thorough -- recommended), `medium` (faster iterations), `low` (fastest, minimal reasoning)
 >
-> Defaults: `--model sonnet --effort high`"
+> Defaults: runner=`sonnet`, deep=`opus`, effort=`high`"
+
+Substitute the user's chosen deep model into the `program.md` template where `{deep_model}` appears (the `claude --model {deep_model} -p` calls in the Hypothesize step and Exploration Schedule).
 
 Update `state.md` to `phase: complete` and present the kickoff:
 
 ```bash
 cd {output_dir}
-claude --dangerously-skip-permissions --model {model} --effort {effort} --append-system-prompt-file program.md "Start the optimization loop. Read the edit surface files, run the eval, and begin iterating."
+claude --dangerously-skip-permissions --model {runner_model} --effort {effort} --append-system-prompt-file program.md "Start the optimization loop. Read the edit surface files, run the eval, and begin iterating."
 ```
 
 > `--append-system-prompt-file` loads program.md as background instructions. The quoted string is the initial prompt that kicks off the first iteration.
+>
+> The runner model handles the session. The deep reasoning model is called via `claude -p` inside the loop for hypothesis generation and exploration rounds.
 >
 > **Permission modes:** `--dangerously-skip-permissions` bypasses all permission prompts — only use in isolated environments (containers, VMs). For safer unattended operation with background safety checks, use `--enable-auto-mode` instead.
 
