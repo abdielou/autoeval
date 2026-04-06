@@ -49,6 +49,13 @@ Include all dependencies needed by:
 
 Read `skills/_shared/monitor-template.py` and write it verbatim as `monitor.py` in the output directory. Do NOT modify the template -- it is designed to work with any autoeval loop.
 
+**`run-loop.sh`** -- wrapper script that launches claude sessions with auto-restart. Read `skills/_shared/run-loop-template.sh` and write it to the output directory, substituting:
+- `{runner_model}` — the user's chosen runner model
+- `{effort}` — the user's chosen effort level
+- `{timeout_minutes}` — calculated as 2x the expected time for {max_iterations} iterations (minimum 30 minutes)
+
+Make it executable: `chmod +x run-loop.sh`
+
 ### Step 2: Initialize Git
 
 If the output directory is not already a git repo:
@@ -130,43 +137,47 @@ Wait for the user to explicitly confirm. Do NOT provide the kickoff command unti
 >
 > Defaults: runner=`sonnet`, deep=`opus`, effort=`high`"
 
-Substitute the user's chosen deep model into the `program.md` template where `{deep_model}` appears (the `claude --model {deep_model} -p` calls in the Hypothesize step and Exploration Schedule).
+Substitute the user's chosen deep model into the `program.md` template where `{deep_model}` appears (the `claude --model {deep_model} -p` calls in the Hypothesize step and Exploration Schedule). Also substitute `{max_iterations}` (default: 15) into the Session Limits section of `program.md`.
 
 Update `state.md` to `phase: complete` and present the kickoff:
 
+---
+
+**To start the loop** (Terminal 1):
+
 ```bash
 cd {output_dir}
-claude --dangerously-skip-permissions --model {runner_model} --effort {effort} --append-system-prompt-file program.md "Start the optimization loop. Read the edit surface files, run the eval, and begin iterating."
+./run-loop.sh
 ```
 
-> `--append-system-prompt-file` loads program.md as background instructions. The quoted string is the initial prompt that kicks off the first iteration.
->
-> The runner model handles the session. The deep reasoning model is called via `claude -p` inside the loop for hypothesis generation and exploration rounds.
->
-> **Permission modes:** `--dangerously-skip-permissions` bypasses all permission prompts — only use in isolated environments (containers, VMs). For safer unattended operation with background safety checks, use `--enable-auto-mode` instead.
+This launches claude sessions that auto-restart with fresh context every {max_iterations} iterations. A hard timeout of {timeout_minutes} minutes acts as a safety net.
 
-**Monitoring -- open a second terminal and run:**
+**To monitor progress** (Terminal 2):
 
 ```bash
 cd {output_dir}
 python monitor.py
 ```
 
-This opens a live dashboard at `http://localhost:8080` showing:
+Live dashboard at `http://localhost:8080` showing:
 - Composite score progression over iterations
 - Individual component scores (toggleable)
 - Best score, floor/ceiling bounds
 - Hypothesis text on hover
 - Summary stats: iteration count, time elapsed, delta from baseline
 
-The dashboard auto-refreshes every 30 seconds.
+Auto-refreshes every 30 seconds.
 
-**Other controls:**
-- Stop the loop: interrupt the Claude Code session (Ctrl+C)
-- Steer the loop: edit `program.md` constraints or domain guidance, then restart
+**Controls:**
+- Stop the loop: Ctrl+C in Terminal 1 (waits for current iteration to finish)
+- Resume after stopping: `./run-loop.sh` (picks up from git history)
+- Steer the loop: edit `program.md` constraints or domain guidance — takes effect at next session restart
+- Custom timeout: `./run-loop.sh --timeout 45` (minutes per session)
 
 **Expanding the eval:**
 - See `evals/README.md` for how to add cases
 - See `.planning/autoeval/eval-strategy.md` for coverage gaps and expansion plan
+
+> **Permission modes:** `run-loop.sh` uses `--dangerously-skip-permissions` — only run in isolated environments (containers, VMs). Edit the script to use `--enable-auto-mode` for safer unattended operation.
 
 ---

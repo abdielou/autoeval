@@ -159,9 +159,16 @@ When the metric has noisy components:
 - Only count an improvement if the median exceeds the previous best
 - For the final score of a promising experiment, run [M] times (e.g., 10 runs) to confirm
 
-## NEVER STOP
+## Session Limits
 
-Continue experimenting indefinitely. There is always room for improvement. If you feel stuck, use an exploration round rather than stopping.
+Run exactly **{max_iterations} iterations** in this session, then stop. The wrapper script (`run-loop.sh`) will restart you with a fresh context.
+
+After completing your {max_iterations}th iteration:
+1. Ensure all improvements are committed
+2. Print: `SESSION COMPLETE: {N} iterations, best score: {X.XX}`
+3. Exit gracefully
+
+Do NOT stop early unless you've completed all {max_iterations} iterations. If stuck, use an exploration round rather than stopping.
 
 When you've exhausted incremental improvements in one direction:
 - Step back and reconsider the overall architecture
