@@ -137,11 +137,19 @@ Wait for the user to explicitly confirm. Do NOT provide the kickoff command unti
 
 Substitute the user's chosen deep model into the `program.md` template where `{deep_model}` appears (the `claude --model {deep_model} -p` calls in the Hypothesize step and Exploration Schedule). Also substitute `{max_iterations}` (default: 15) into the Session Limits section of `program.md`.
 
-Update `state.md` to `phase: complete` and present the kickoff:
+Update `state.md` to `phase: complete`.
+
+<HARD-GATE>
+After the user confirms AND selects models, you MUST present the full kickoff instructions below. This is the FINAL output of the entire autoeval process. The user needs to know exactly how to run the loop. Do NOT end the conversation without showing these commands. Do NOT summarize or abbreviate them.
+</HARD-GATE>
+
+Present the following in full:
 
 ---
 
-**To start the loop** (Terminal 1):
+**You're all set. Here's how to run everything:**
+
+**Step 1 — Start the loop** (open a terminal):
 
 ```bash
 cd {output_dir}
@@ -150,37 +158,32 @@ python run-loop.py
 
 This launches claude sessions that auto-restart with fresh context every {max_iterations} iterations. A hard timeout of {timeout_minutes} minutes acts as a safety net.
 
-**To monitor progress** (Terminal 2):
+**Step 2 — Monitor progress** (open a second terminal):
 
 ```bash
 cd {output_dir}
 python monitor.py
 ```
 
-Live dashboard at `http://localhost:8080` showing:
-- Composite score progression over iterations
-- Individual component scores (toggleable)
-- Best score, floor/ceiling bounds
-- Hypothesis text on hover
-- Summary stats: iteration count, time elapsed, delta from baseline
+Opens a live dashboard at `http://localhost:8080` — score chart, component breakdown, hypothesis history. Auto-refreshes every 30 seconds.
 
-Auto-refreshes every 30 seconds.
+**Step 3 — Steer the loop** (optional, any time):
+
+Append to `steering.md` to guide the agent without stopping the loop:
+
+```markdown
+## after <commit-hash>
+Your guidance here. The agent reads this before each iteration.
+```
 
 **Controls:**
-- Stop the loop: Ctrl+C in Terminal 1 (waits for current iteration to finish)
-- Resume after stopping: `python run-loop.py` (picks up from git history)
-- Steer the loop: append to `steering.md` with a commit tag — takes effect on the next iteration:
-  ```
-  ## after <commit-hash>
-  Your guidance here. The agent prioritizes this over its own hypothesis.
-  ```
-- Permanent changes: edit `program.md` constraints or domain guidance — takes effect at next session restart
-- Custom timeout: `python run-loop.py --timeout 45` (minutes per session)
-
-**Expanding the eval:**
-- See `evals/README.md` for how to add cases
-- See `.planning/autoeval/eval-strategy.md` for coverage gaps and expansion plan
+- **Stop the loop:** Ctrl+C once kills the current session; Ctrl+C again within 3s stops the loop
+- **Resume:** `python run-loop.py` (picks up from git history)
+- **Permanent changes:** edit `program.md` — takes effect at next session restart
+- **Custom timeout:** `python run-loop.py --timeout 45`
 
 > **Permission modes:** `run-loop.py` uses `--dangerously-skip-permissions` — only run in isolated environments (containers, VMs). Edit the script to use `--enable-auto-mode` for safer unattended operation.
+
+---
 
 ---
