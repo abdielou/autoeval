@@ -113,11 +113,21 @@ Ready to start? (yes/no)
 Wait for the user to explicitly confirm. Do NOT provide the kickoff command until the user says yes. If they raise concerns, address them first.
 </HARD-GATE>
 
-**After user confirms**, update `state.md` to `phase: complete` and present the kickoff:
+**After user confirms**, ask which model and effort level to use:
+
+> "Which model and effort level for the loop?
+>
+> **Model:** `opus` (strongest, slowest, most expensive), `sonnet` (balanced -- recommended), `haiku` (fastest, cheapest, least capable)
+>
+> **Effort:** `high` (thorough -- recommended), `medium` (faster iterations), `low` (fastest, minimal reasoning)
+>
+> Defaults: `--model sonnet --effort high`"
+
+Update `state.md` to `phase: complete` and present the kickoff:
 
 ```bash
 cd {output_dir}
-claude --dangerously-skip-permissions --append-system-prompt-file program.md "Start the optimization loop. Read the edit surface files, run the eval, and begin iterating."
+claude --dangerously-skip-permissions --model {model} --effort {effort} --append-system-prompt-file program.md "Start the optimization loop. Read the edit surface files, run the eval, and begin iterating."
 ```
 
 > `--append-system-prompt-file` loads program.md as background instructions. The quoted string is the initial prompt that kicks off the first iteration.
