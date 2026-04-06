@@ -225,7 +225,11 @@ function renderStats(data) {
     </div>
     <div class="stat">
       <div class="stat-label">Kept</div>
-      <div class="stat-value">${data.kept_iterations}</div>
+      <div class="stat-value positive">${data.kept_iterations}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Reverted</div>
+      <div class="stat-value negative">${data.total_iterations - data.kept_iterations}</div>
     </div>
     <div class="stat">
       <div class="stat-label">Elapsed</div>
@@ -247,10 +251,14 @@ function renderChart(data) {
 
   const labels = data.iterations.map(d => d.iteration || labels.length + 1);
 
-  // Composite score dataset
+  // Split iterations into kept and reverted for separate rendering
+  const keptScores = data.iterations.map(d => d.kept !== false ? d.score : null);
+  const revertedScores = data.iterations.map(d => d.kept === false ? d.score : null);
+
+  // Composite score dataset (kept only — connected line)
   const datasets = [{
-    label: 'Composite Score',
-    data: data.iterations.map(d => d.score),
+    label: 'Kept',
+    data: keptScores,
     borderColor: COLORS[0],
     backgroundColor: COLORS[0] + '20',
     borderWidth: 2,
@@ -258,7 +266,23 @@ function renderChart(data) {
     pointHoverRadius: 7,
     fill: false,
     tension: 0.1,
+    spanGaps: true,
   }];
+
+  // Reverted experiments — red scatter dots, no connecting line
+  if (revertedScores.some(s => s !== null)) {
+    datasets.push({
+      label: 'Reverted',
+      data: revertedScores,
+      borderColor: '#f85149',
+      backgroundColor: '#f8514940',
+      borderWidth: 1,
+      pointRadius: 5,
+      pointHoverRadius: 8,
+      pointStyle: 'crossRot',
+      showLine: false,
+    });
+  }
 
   // Component datasets
   if (data.components.length > 0) {
