@@ -9,7 +9,8 @@ The agent runs a fixed number of iterations per session, then exits.
 This script restarts it with a fresh context. A hard timeout acts
 as a safety net in case the agent doesn't exit on its own.
 
-Stop the loop: Ctrl+C (kills current session immediately)
+Stop the loop: Ctrl+C once kills the current session.
+               Ctrl+C again within 3 seconds stops the loop entirely.
 
 Cross-platform: works on Linux, macOS, and Windows.
 No dependencies beyond Python stdlib.
@@ -28,6 +29,24 @@ TIMEOUT_MINUTES = {timeout_minutes}
 # ------------------------------------------------
 
 current_process = None
+last_interrupt = 0.0
+
+
+def _kill_process():
+    """Kill the current child process."""
+    global current_process
+    if current_process is None:
+        return
+    try:
+        current_process.terminate()
+        try:
+            current_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            current_process.kill()
+            current_process.wait(timeout=5)
+    except Exception:
+        pass
+    current_process = None
 
 
 def run_session(session_num, timeout_minutes):
@@ -51,6 +70,10 @@ def run_session(session_num, timeout_minutes):
     except subprocess.TimeoutExpired:
         print(f"Session {session_num} timed out after {timeout_minutes}m (safety net)")
         _kill_process()
+    except KeyboardInterrupt:
+        # Ctrl+C during session — kill the child, let main loop decide
+        _kill_process()
+        raise
     except FileNotFoundError:
         print("Error: 'claude' command not found. Is Claude Code installed and on your PATH?")
         sys.exit(1)
@@ -65,23 +88,9 @@ def run_session(session_num, timeout_minutes):
     print()
 
 
-def _kill_process():
-    """Kill the current child process and all its children."""
-    global current_process
-    if current_process is None:
-        return
-    try:
-        current_process.terminate()
-        try:
-            current_process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            current_process.kill()
-            current_process.wait(timeout=5)
-    except Exception:
-        pass
-
-
 def main():
+    global last_interrupt
+
     parser = argparse.ArgumentParser(description="autoeval loop runner")
     parser.add_argument("--timeout", type=int, default=TIMEOUT_MINUTES,
                         help=f"timeout in minutes per session (default: {TIMEOUT_MINUTES})")
@@ -89,22 +98,37 @@ def main():
 
     print("=== autoeval loop runner ===")
     print(f"Model: {MODEL} | Effort: {EFFORT} | Timeout: {args.timeout}m per session")
-    print("Press Ctrl+C to stop")
+    print("Ctrl+C once = kill session | Ctrl+C twice within 3s = stop loop")
     print()
 
     session = 0
-    try:
-        while True:
-            session += 1
+    while True:
+        session += 1
+        try:
             run_session(session, args.timeout)
-            # Brief pause between sessions
             time.sleep(2)
-    except KeyboardInterrupt:
-        print()
-        print(f"Loop stopped by user during session {session}.")
-        _kill_process()
-        print("To resume: python run-loop.py")
-        print("To monitor: python monitor.py")
+        except KeyboardInterrupt:
+            now = time.time()
+            if now - last_interrupt < 3.0:
+                # Double Ctrl+C — stop the loop
+                print()
+                print(f"Loop stopped after {session} sessions.")
+                print("To resume: python run-loop.py")
+                print("To monitor: python monitor.py")
+                sys.exit(0)
+            else:
+                # Single Ctrl+C — session killed, will restart
+                last_interrupt = now
+                print()
+                print("Session killed. Restarting in 3s... (Ctrl+C again to stop loop)")
+                try:
+                    time.sleep(3)
+                except KeyboardInterrupt:
+                    print()
+                    print(f"Loop stopped after {session} sessions.")
+                    print("To resume: python run-loop.py")
+                    print("To monitor: python monitor.py")
+                    sys.exit(0)
 
 
 if __name__ == "__main__":
