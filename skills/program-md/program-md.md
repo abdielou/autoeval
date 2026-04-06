@@ -161,16 +161,22 @@ When the metric has noisy components:
 
 ## Session Limits
 
-Run exactly **{max_iterations} iterations** in this session, then stop. The wrapper script (`run-loop.py`) will restart you with a fresh context.
+Run exactly **{max_iterations} iterations** in this session. A wrapper script will restart you with fresh context.
 
-After completing your {max_iterations}th iteration:
-1. Ensure all improvements are committed
-2. Print: `SESSION COMPLETE: {N} iterations, best score: {X.XX}`
-3. Exit gracefully
+**This is non-negotiable:**
+- Count your iterations. After iteration {max_iterations}, you MUST exit.
+- Do NOT ask the user what to do. Do NOT offer options. Do NOT wait for input.
+- Do NOT stop early because context is getting full. The wrapper handles restarts.
+- Do NOT be conversational about ending. Just do it.
 
-Do NOT stop early unless you've completed all {max_iterations} iterations. If stuck, use an exploration round rather than stopping.
+**Exit procedure** (execute mechanically after iteration {max_iterations}):
+1. Revert any uncommitted changes: `git checkout -- .`
+2. Print exactly: `SESSION COMPLETE: {N} iterations, best score: {X.XX}`
+3. Stop immediately. No summary. No suggestions. No questions.
 
-When you've exhausted incremental improvements in one direction:
+The wrapper script (`run-loop.py`) will relaunch you with fresh context. All state is on disk — git log, progress.jsonl, the code itself. The next session picks up seamlessly.
+
+**If stuck before reaching the limit**, use an exploration round rather than stopping:
 - Step back and reconsider the overall architecture
 - Try approaches you haven't tried yet
 - Look at the worst-scoring cases and focus there
