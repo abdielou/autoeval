@@ -97,9 +97,9 @@ Follow this loop indefinitely:
 
 5. **Log** -- Append the eval result to `progress.jsonl` for the monitoring dashboard:
    ```bash
-   echo '{"iteration": N, "timestamp": "'$(date -Iseconds)'", "score": X.XX, "components": {COMPONENT_SCORES}, "hypothesis": "HYPOTHESIS_TEXT", "kept": true/false}' >> progress.jsonl
+   echo '{"iteration": N, "timestamp": "'$(date -Iseconds)'", "score": X.XX, "components": {COMPONENT_SCORES}, "hypothesis": "HYPOTHESIS_TEXT", "kept": true/false, "failure_reason": "REASON_OR_NULL"}' >> progress.jsonl
    ```
-   Replace N with the iteration number, COMPONENT_SCORES with the components object from the eval JSON output, and HYPOTHESIS_TEXT with your hypothesis. Always append — even for reverted experiments (set `"kept": false`).
+   Replace N with the iteration number, COMPONENT_SCORES with the components object from the eval JSON output, and HYPOTHESIS_TEXT with your hypothesis. Always append — even for reverted experiments (set `"kept": false`). For reverted experiments, set `failure_reason` to a brief explanation of what regressed (e.g., "sharpness dropped 0.12, firing_pattern regressed"). For kept experiments, set it to `null`.
 
 6. **Decide:**
    - If score >= previous best:

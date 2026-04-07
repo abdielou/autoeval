@@ -170,6 +170,14 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   .stat-value.neutral { color: #8b949e; }
   .chart-container { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
   canvas { max-height: 400px; }
+  .failures-section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+  .failures-section h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #f0f6fc; }
+  .failures-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .failures-table th { text-align: left; color: #8b949e; padding: 8px; border-bottom: 1px solid #30363d; font-weight: 500; }
+  .failures-table td { padding: 8px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  .failures-table tr:hover td { background: #1c2128; }
+  .failure-score { color: #f85149; font-weight: 600; }
+  .failure-reason { color: #d29922; }
   .footer { font-size: 12px; color: #484f58; text-align: center; margin-top: 24px; }
   .no-data { text-align: center; padding: 80px 20px; color: #8b949e; font-size: 16px; }
   .refresh-indicator { font-size: 12px; color: #484f58; float: right; margin-top: -32px; }
@@ -185,6 +193,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 </div>
 <div id="no-data" class="no-data" style="display:none;">
   Waiting for first iteration... dashboard will auto-refresh.
+</div>
+<div id="failures-section" class="failures-section" style="display:none;">
+  <h2>Failed Experiments (learnings)</h2>
+  <table class="failures-table">
+    <thead>
+      <tr><th>#</th><th>Score</th><th>Hypothesis</th><th>Why it failed</th></tr>
+    </thead>
+    <tbody id="failures-body"></tbody>
+  </table>
 </div>
 <div class="footer">autoeval monitoring dashboard &mdash; refreshes every REFRESH_INTERVAL_VALUE seconds</div>
 
@@ -333,7 +350,10 @@ function renderChart(data) {
               if (!iter) return '';
               const lines = [];
               if (iter.hypothesis) lines.push('Hypothesis: ' + iter.hypothesis);
-              if (iter.kept === false) lines.push('[REVERTED]');
+              if (iter.kept === false) {
+                lines.push('[REVERTED]');
+                if (iter.failure_reason) lines.push('Reason: ' + iter.failure_reason);
+              }
               return lines.join('\\n');
             }
           }
@@ -360,12 +380,36 @@ function renderChart(data) {
   });
 }
 
+function renderFailures(data) {
+  const failures = data.iterations.filter(d => d.kept === false);
+  const section = document.getElementById('failures-section');
+  const tbody = document.getElementById('failures-body');
+
+  if (failures.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  // Show most recent failures first, limit to 20
+  const recent = failures.slice(-20).reverse();
+  tbody.innerHTML = recent.map(f => `
+    <tr>
+      <td>${f.iteration || '?'}</td>
+      <td class="failure-score">${(f.score != null) ? f.score.toFixed(4) : '?'}</td>
+      <td>${f.hypothesis || '—'}</td>
+      <td class="failure-reason">${f.failure_reason || '—'}</td>
+    </tr>
+  `).join('');
+}
+
 async function refresh() {
   try {
     const resp = await fetch('/data');
     const data = await resp.json();
     renderStats(data);
     renderChart(data);
+    renderFailures(data);
   } catch (e) {
     console.error('Refresh failed:', e);
   }
