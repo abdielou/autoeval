@@ -17,6 +17,7 @@ No dependencies beyond Python stdlib.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -65,7 +66,14 @@ def run_session(session_num, timeout_minutes):
     ]
 
     try:
-        current_process = subprocess.Popen(cmd)
+        # On Windows, create the child in a new process group so Ctrl+C
+        # only goes to Python, not the child. Python then kills the child
+        # explicitly. Without this, both processes race to handle Ctrl+C
+        # and Python's KeyboardInterrupt may not fire reliably.
+        kwargs = {}
+        if sys.platform == "win32":
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        current_process = subprocess.Popen(cmd, **kwargs)
         current_process.wait(timeout=timeout_minutes * 60)
     except subprocess.TimeoutExpired:
         print(f"Session {session_num} timed out after {timeout_minutes}m (safety net)")
