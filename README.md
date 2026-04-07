@@ -174,6 +174,21 @@ those have non-linear relationships with the target.
 
 Steering entries accumulate — old ones are automatically irrelevant once HEAD moves past them. The full steering history is preserved for reference.
 
+## Learning from failed experiments
+
+Most optimization loops silently discard failed attempts. autoeval preserves them as learnings.
+
+When an experiment scores lower than the current best, before reverting the code:
+
+1. The full `git diff`, hypothesis, score breakdown, and a brief failure analysis are saved to `failed_experiments/`
+2. The `progress.jsonl` entry includes `failure_reason` explaining what regressed
+3. The monitoring dashboard shows a **Failed Experiments** table with the last 20 failures — score, hypothesis, and why it failed
+4. Red X markers on the chart show exactly where failed attempts landed relative to the kept improvements
+
+Before each new hypothesis, the deep reasoning model sees the list of failed experiments and is instructed to avoid repeating similar approaches. The agent can also read individual diff files to understand *how* a past attempt failed, not just *that* it failed.
+
+This turns wasted iterations into institutional knowledge the loop builds up over time.
+
 ## Eval integrity
 
 Phase 3 includes an integrity validation step that catches evals that look functional but measure nothing real:
