@@ -125,24 +125,43 @@ Ready to start? (yes/no)
 Wait for the user to explicitly confirm. Do NOT provide the kickoff command until the user says yes. If they raise concerns, address them first.
 </HARD-GATE>
 
-**After user confirms**, ask which models and effort level to use:
+**After user confirms**, ask two questions in sequence:
 
-> "The loop uses two models -- a **runner** for the main iteration cycle (editing code, running evals, committing) and a **deep reasoning model** for hypothesis generation and exploration rounds (called via `claude -p` one-shot).
+**Question 1: Where to run?**
+
+> "How do you want to run the loop?
 >
-> **Runner model** (runs the session, does most of the work):
-> - `sonnet` -- balanced speed/quality (recommended)
-> - `haiku` -- fastest, cheapest, good for narrow edit surfaces
-> - `opus` -- strongest but expensive for a long-running loop
+> **A. Claude API** (default) — uses `claude` CLI, costs tokens, best quality
+> **B. Local model** — uses a compatible CLI (e.g., `claudish`) pointed at a local model (e.g., Gemma 4 via LM Studio). Free to run overnight.
 >
-> **Deep reasoning model** (called for hypothesis + exploration rounds):
-> - `opus` -- best for creative leaps and novel approaches (recommended)
-> - `sonnet` -- cheaper, still capable
+> Default: A"
+
+If user picks **B**, ask for:
+- CLI command (e.g., `claudish`)
+- Model name (e.g., `gemma-4-27b`)
+
+Both the runner and deep reasoning calls will use the same CLI and model.
+
+If user picks **A**, use defaults: CLI = `claude`.
+
+**Question 2: Model and effort?**
+
+> "Which models and effort level?
 >
-> **Effort:** `high` (thorough -- recommended), `medium` (faster iterations), `low` (fastest, minimal reasoning)
+> **Runner model:** `sonnet` (recommended), `haiku` (cheapest), `opus` (strongest)
+> **Deep reasoning model:** `opus` (recommended), `sonnet` (cheaper)
+> **Effort:** `high` (recommended), `medium`, `low`
 >
 > Defaults: runner=`sonnet`, deep=`opus`, effort=`high`"
 
-Substitute the user's chosen deep model into the `program.md` template where `{deep_model}` appears (the `claude --model {deep_model} -p` calls in the Hypothesize step and Exploration Schedule). Also substitute `{max_iterations}` (default: 15) into the Session Limits section of `program.md`.
+Skip the runner model question if they already specified a local model in Question 1.
+
+Substitute the user's choices into the templates:
+- `CLI` variable in `run-loop.py` config block
+- `{runner_model}`, `{effort}` into `run-loop.py` config block
+- `{deep_model}` into `program.md` where `{deep_model}` appears
+- `{deep_cli}` into `program.md` where `{deep_cli}` appears
+- `{max_iterations}` (default: 15) into the Session Limits section of `program.md`
 
 Update `state.md` to `phase: complete`.
 

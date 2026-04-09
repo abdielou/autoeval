@@ -24,6 +24,7 @@ import time
 from datetime import datetime
 
 # --- Configuration (set by autoeval Phase 6) ---
+CLI = "claude"              # CLI command — change to "claudish" or other compatible CLI
 MODEL = "{runner_model}"
 EFFORT = "{effort}"
 TIMEOUT_MINUTES = {timeout_minutes}
@@ -57,7 +58,7 @@ def run_session(session_num, timeout_minutes):
     print(f"--- Session {session_num} starting ({now}) ---")
 
     cmd = [
-        "claude",
+        CLI,
         "--dangerously-skip-permissions",
         "--model", MODEL,
         "--effort", EFFORT,

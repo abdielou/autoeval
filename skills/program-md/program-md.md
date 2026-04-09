@@ -61,7 +61,7 @@ Follow this loop indefinitely:
 
 1. **Hypothesize** -- Use the deep reasoning model to generate your hypothesis. Run:
    ```bash
-   claude --model {deep_model} -p "$(cat <<'PROMPT'
+   {deep_cli} --model {deep_model} -p "$(cat <<'PROMPT'
    I'm optimizing [problem description]. Current best score: [X.XX].
 
    Recent experiments (git log):
@@ -143,7 +143,7 @@ Follow this loop indefinitely:
 Every 5th iteration, do an **exploration round** instead of incremental improvement. Use the deep reasoning model to generate a fundamentally different approach:
 
 ```bash
-claude --model {deep_model} -p "$(cat <<'PROMPT'
+{deep_cli} --model {deep_model} -p "$(cat <<'PROMPT'
 I'm optimizing [problem description]. Current best score: [X.XX].
 
 Full experiment history:
