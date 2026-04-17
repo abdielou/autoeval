@@ -47,10 +47,10 @@ The meta-agent optimizes how information is found and surfaced. RAG systems are 
 
 ## 6. Pipeline Optimization Loop
 
-**Edit surface:** Processing stages, transformation logic, filtering rules, data flow architecture, stage ordering.
-**Scoring function:** Output quality, throughput, latency, error rate, cost.
+**Edit surface:** Processing stages, transformation logic, filtering rules, data flow architecture, stage ordering, fallback chains between stages.
+**Scoring function:** Output quality, throughput, latency, error rate, cost, end-to-end success rate.
 
-The meta-agent improves a multi-stage data processing pipeline. Includes ETL, media processing, data cleaning, and feature engineering.
+The meta-agent improves a multi-stage data processing pipeline. Includes ETL, media processing, data cleaning, feature engineering, and recovery-oriented pipelines (e.g., billing scrape -> anomaly detection -> reconciliation -> escalation, where the meta-agent tunes detection thresholds, reconciliation strategies, and escalation triggers).
 
 ## 7. Simulation Calibration Loop
 
@@ -61,10 +61,10 @@ The meta-agent tunes a simulation to match reality. Includes physics, financial 
 
 ## 8. Strategy and Decision Loop
 
-**Edit surface:** Decision rules, heuristics, evaluation functions, planning algorithms, game trees, resource allocation logic.
-**Scoring function:** Win rate, expected value, regret, distance from known-optimal solutions.
+**Edit surface:** Decision rules, heuristics, evaluation functions, planning algorithms, game trees, resource allocation logic, switching thresholds.
+**Scoring function:** Win rate, expected value, regret, distance from known-optimal solutions, long-run cost/reward.
 
-The meta-agent improves a decision-making system. Includes game-playing, scheduling, trading strategies, and resource allocation.
+The meta-agent improves a decision-making system. Includes game-playing, scheduling, trading strategies, resource allocation, and threshold-driven policies (e.g., energy-plan switching based on price signals and usage patterns, where the meta-agent tunes when to switch, hedge, or hold).
 
 ## 9. Adversarial Loop
 
@@ -82,10 +82,10 @@ The meta-agent optimizes the data itself. Score measured indirectly by training/
 
 ## 11. Control Systems Loop
 
-**Edit surface:** Controller parameters (PID gains, MPC horizons), control architecture, sensor fusion logic, actuator mapping.
-**Scoring function:** Tracking error, stability margins, settling time, energy efficiency, safety constraint satisfaction.
+**Edit surface:** Controller parameters (PID gains, MPC horizons), control architecture, sensor fusion logic, actuator mapping, multi-signal weighting.
+**Scoring function:** Tracking error, stability margins, settling time, energy efficiency, safety constraint satisfaction, multi-objective cost (e.g., comfort + cost + wear).
 
-The meta-agent tunes a control system -- robotics, industrial automation, autonomous vehicles, HVAC, power grid.
+The meta-agent tunes a control system -- robotics, industrial automation, autonomous vehicles, HVAC (e.g., tuning how weather forecast, occupancy signals, and electricity price jointly drive setpoint adjustments), power grid.
 
 ## 12. Interface Optimization Loop
 

@@ -9,7 +9,7 @@
       "name": "autoeval",
       "description": "Transform vague optimization problems into fully scaffolded autonomous experiment loops with eval suites, scoring functions, and meta-agent directives.",
       "source": "./",
-      "version": "0.8.0",
+      "version": "0.9.0",
       "author": {
         "name": "abdielou"
       }

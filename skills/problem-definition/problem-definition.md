@@ -64,12 +64,15 @@ Evaluate whether this problem is actually suited for an autonomous optimization 
 - An output that can be automatically scored (not requiring human judgment every iteration)
 - An edit surface where small changes can produce measurable differences
 - Enough iteration headroom -- the problem benefits from 10+ experiments, not just 1-2
+- A favorable cost ratio -- the expected quality lift per experiment clearly exceeds the experiment's cost (tokens, latency, engineering complexity)
 
 **Bad candidates (exit ramp):**
 - Well-defined workflows with clear requirements ("just build it")
 - Problems where the solution is obvious but needs implementation time
 - Problems requiring human judgment on every output
 - Problems with no automatable scoring function
+- The iterative behavior can be achieved with pre-defined branches (decision tree, explicit fallback chain) instead of an autonomous loop -- the value comes from the static architecture, not the meta-agent
+- A bounded verification pass (one-shot validator-and-fix, single retry on failure) would deliver most of the quality lift without an autoeval scaffold
 
 **If exiting:**
 
